@@ -67,7 +67,7 @@ int decompress( const void *inbuf, const unsigned inlen, void *outbuf)
   		if (in->empty())
      			puts("  IN is empty");
   		else
-     			printf("  IN used %X of %X\n", in->used(), swapl(hdr->comp_size) - sizeof(JZPHDR));
+     			printf("  IN used %X of %lu\n", in->used(), swapl(hdr->comp_size) - sizeof(JZPHDR));
   		if (out->full())
      			puts("  OUT is full");
   		else
@@ -79,12 +79,12 @@ int decompress( const void *inbuf, const unsigned inlen, void *outbuf)
   	return res;
 }
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	if ((argc!=3) && (argc!=4))
   	{
     		printf("Usage: %s <in.jzp> <out.bin> [out_rev.txt]\n", argv[0]);
-    		return;
+    		return 0;
   	}
 
   	unsigned insize;
@@ -92,7 +92,7 @@ void main(int argc, char *argv[])
   	if (!inbuf)
   	{
     		puts("Can't open input file !");
-    		return;
+    		return 1;
   	}
 
   	const JZPHDR *hdr = (const JZPHDR *)inbuf;
@@ -100,14 +100,14 @@ void main(int argc, char *argv[])
 	{
 		puts("Not a JZP !");
 		delete inbuf;
-		return;
+		return 2;
 	}
   	unsigned ck = jzp_checksum(inbuf, swapl(hdr->comp_size));
   	if (ck!=0)
   	{
   		puts("Checksum error ! Input file is corrupt !");
 		delete inbuf;
-		return;
+		return 3;
 	}
 	puts(hdr->revision);
 	if (argc==4) //save revision
